@@ -1,19 +1,26 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <img alt="Vue logo" src="./assets/17100512.jpg" height="200" width="250">
+    <!-- <Home msg="Welcome to Your Vue.js App"/> -->
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+// import Home from './components/Home.vue'
+
+
+// Vue.use(VueAxios, axios)
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
-  }
+    // Home
+  },
+  
 }
+
+
 </script>
 
 <style>

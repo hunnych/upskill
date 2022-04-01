@@ -1,0 +1,137 @@
+<template>
+    <b-container>
+        <div v-if="error.length>0">
+            <p v-for="e in error" :key="e.id">
+                {{e | Ucase}}
+            </p>
+        </div>
+        <b-form @submit="submitForm">
+           <b-form-input type="text" id="title" v-model="expenseData.title" placeholder="Expense Title"></b-form-input>
+           <b-form-input type="text" id="amount" v-model="expenseData.amount" placeholder="Enter Amount"></b-form-input>
+           <b-form-group id="input-group-3" label="Paid by:" label-for="input-3">
+           <b-select id="input-3" :options="flatmates" v-model="expenseData.paidby"></b-select>
+            </b-form-group>
+           <b-button type="submit" variant="primary">Add Expense</b-button>    
+        </b-form>
+        <br>
+        <div><b-form-input type="text" v-model="search" placeholder="Search Expenses Here"></b-form-input></div>
+        <br>
+        <div>
+            <table>
+                <tr>
+                    <th>Expense Title</th>
+                    <th>Expense Amount</th>
+                    <th>Expense Paid By</th>
+                    <th>Action</th>
+                </tr>
+                <tr v-for="data in filterExpense" :key="data.id"> 
+                    <td>{{ data.title }}</td>
+                    <td>{{ data.amount }}</td>
+                    <td>{{ data.paidby }}</td>
+                    <td><b-icon v-bind:style="{'cursor':'pointer'}" icon="trash-fill" aria-hidden="true" variant="danger" @click="deleteExpense(data.id)"></b-icon></td>
+                </tr>
+                <tr>
+                    <td colspan="4"> Total expense paid : {{ $store.getters.getTotalExpense}}</td>
+                </tr>
+            </table>
+        </div>
+    </b-container>
+</template>
+
+<script>
+
+import Vue from "vue";
+import VueAxios from "vue-axios";
+import axios from "axios";
+
+Vue.use(VueAxios,axios);
+
+export default {
+    name:"Form",
+    data(){
+        return {
+            expenseData:{
+                title:null,
+                amount:null,
+                paidby:null
+            },
+            items:null,
+            error:[],
+            totalExpense:0,
+            search:null,
+            flatmates: [{ text: 'Select One', value: null }, 'Parth', 'pranav', 'Harshit', 'Rakesh'],
+        }
+    },
+    methods:{
+        submitForm(e){
+            e.preventDefault();
+            this.error = [];
+            if(this.expenseData.title == null){
+                this.error.push("Please provide title");
+            }
+            if(this.expenseData.amount == null){
+                this.error.push("Please provide amount");
+            }
+            if(this.expenseData.paidby == null){
+                this.error.push("Please select payer");
+            }
+
+            if(this.error.length == 0){
+                this.axios.post(`http://10.10.10.22:3010/expenses`,{
+                    "title":this.expenseData.title,
+                    "amount":this.expenseData.amount,
+                    "paidby":this.expenseData.paidby
+                }).then((result)=>{
+                    console.log(result);
+                    this.getExpenses();
+                })
+            }
+            console.log(this.error);
+            console.log("form submitted",this.expenseData);
+        },
+        
+        deleteExpense(id){
+            this.axios.delete(`http://10.10.10.22:3010/expenses/${id}`).then((result)=>{
+                console.log(result.data);
+                this.getExpenses();
+            });
+        },
+                
+        },
+        created(){
+            this.$store.dispatch('getExpenses');
+            this.$store.dispatch('getExpenses');
+        },
+       
+        /* mounted(){
+            this.items = this.$store.state.items;   
+            console.log(this.items);
+        }, */
+    computed:{
+        filterExpense(){
+            if(this.search){
+                console.log(this.search.toLowerCase().split(' '));
+                return this.$store.state.items.filter(item => {
+                   return this.search.toLowerCase().split(' ').every(v => item.title.toLowerCase().includes(v))
+                });
+            }else{
+                return this.$store.state.items;
+            }
+        }
+    }
+}
+</script>
+
+<style scoped>
+table {
+  width: 100%;
+  border:1px solid black;
+}
+
+th, td {
+  text-align: center;
+  padding: 8px;
+}
+
+tr:nth-child(even) {background-color: #f2f2f2};
+</style>
